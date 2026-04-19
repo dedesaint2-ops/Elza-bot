@@ -1,9 +1,21 @@
 import telebot
 import random
 import time
+import os
 from datetime import datetime, timedelta
 import pytz
 
+# 🔒 HARD LOCK (ANPECH DOUBLON)
+LOCK_FILE = "bot.lock"
+
+if os.path.exists(LOCK_FILE):
+    print("Bot deja ap kouri, stop...")
+    exit()
+
+with open(LOCK_FILE, "w") as f:
+    f.write("running")
+
+# 🔑 CONFIG
 TOKEN = "8633167067:AAFcXmPWtpcg2DT5IJ5JltaVSyL1AhVDAX8"
 CHAT_ID = "7000204425"
 
@@ -18,7 +30,7 @@ pairs = [
     "EUR/JPY OTC 💎"
 ]
 
-martingale = 0
+martingale = 2
 
 def get_entry_time():
     tz = pytz.timezone("America/New_York")
@@ -33,16 +45,14 @@ def get_signal():
         return "BUY 📈", rsi
     elif rsi > 70:
         return "SELL 📉", rsi
-    else:
-        return None, rsi
+    return None, rsi
 
 def run_bot():
     global martingale
 
-    print("Bot ap mache (NO SPAM)...")
+    print("Bot ap mache (LOCK ACTIVE)...")
 
-    # delay pou evite spam startup
-    time.sleep(15)
+    time.sleep(10)
 
     while True:
         pair = random.choice(pairs)
@@ -69,7 +79,6 @@ def run_bot():
 
         bot.send_message(CHAT_ID, msg)
 
-        # tann trade fini
         time.sleep(180)
 
         result = random.choices(
@@ -84,19 +93,14 @@ def run_bot():
 
         bot.send_message(CHAT_ID, f"📊 Result: {result}")
 
-        # pause anvan pwochen signal
         time.sleep(60)
 
 @bot.message_handler(commands=['start'])
 def start(message):
     bot.send_message(message.chat.id, "🤖 BOT ACTIVE 🔥")
 
-# 🔥 KLE SOLISYON AN (NO THREAD MULTI)
 if __name__ == "__main__":
     import threading
 
-    # Telegram polling
     threading.Thread(target=bot.infinity_polling, daemon=True).start()
-
-    # sèlman 1 loop
     run_bot()
