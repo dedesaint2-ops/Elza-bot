@@ -1,19 +1,15 @@
 import telebot
 import random
 import time
-import threading
 from datetime import datetime, timedelta
 import pytz
 
-# 🔑 TOKEN & CHAT ID
 TOKEN = "8633167067:AAFcXmPWtpcg2DT5IJ5JltaVSyL1AhVDAX8"
 CHAT_ID = "7000204425"
 
 bot = telebot.TeleBot(TOKEN)
 
-# 📊 OTC PAIRS
 pairs = [
-    "USD/PKR OTC 💎",
     "AUD/USD OTC 💎",
     "AUD/CAD OTC 💎",
     "USD/CHF OTC 💎",
@@ -23,9 +19,8 @@ pairs = [
 ]
 
 martingale = 0
-running = False  # 🔥 anti-duplicate
 
-# ⏰ UTC-5 ENTRY TIME
+# ⏰ UTC-5
 def get_entry_time():
     tz = pytz.timezone("America/New_York")
     now = datetime.now(tz)
@@ -33,12 +28,10 @@ def get_entry_time():
     entry = entry.replace(second=0, microsecond=0)
     return entry.strftime("%H:%M:%S")
 
-# 📊 SMART RSI
-def calculate_fake_rsi():
-    return random.randint(10, 90)
-
+# 📊 RSI SMART
 def get_signal():
-    rsi = calculate_fake_rsi()
+    rsi = random.randint(10, 90)
+
     if rsi < 30:
         return "BUY 📈", rsi
     elif rsi > 70:
@@ -46,16 +39,21 @@ def get_signal():
     else:
         return None, rsi
 
-# 🚀 SIGNAL SYSTEM (ANTI-SPAM)
-def send_signal():
+# 🚀 MAIN LOOP (SAN THREAD)
+def run_bot():
     global martingale
+
+    print("Bot ap mache san doublon...")
+
+    # 🔥 tann avan premye signal (enpòtan)
+    time.sleep(10)
 
     while True:
         pair = random.choice(pairs)
         direction, rsi = get_signal()
 
         if direction is None:
-            time.sleep(30)
+            time.sleep(20)
             continue
 
         entry = get_entry_time()
@@ -67,17 +65,15 @@ def send_signal():
 📈 Direction: {direction}
 
 ⏰ Entry: {entry}
-⏱️ Timeframe: M1
-⌛ Exp: 1 min
+⏱️ M1 | Exp: 1 min
 
 📊 RSI: {rsi}
 💰 Martingale: {'OFF' if martingale == 0 else f'MG{martingale}'}
-🔥 Strategy: RSI
 """
 
         bot.send_message(CHAT_ID, msg)
 
-        # ⏳ tann 3 min (entry + trade)
+        # ⏳ tann trade fini (3 min)
         time.sleep(180)
 
         result = random.choices(
@@ -92,28 +88,20 @@ def send_signal():
 
         bot.send_message(CHAT_ID, f"📊 Result: {result}")
 
-        # 🔥 pause pou evite doublon
-        time.sleep(30)
-
-# 🔥 ANTI-DOUBLE THREAD
-def start_bot():
-    global running
-    if running:
-        return
-    running = True
-    send_signal()
+        # 🔥 TI POZ OBLIGATWA
+        time.sleep(60)
 
 # ▶️ START COMMAND
 @bot.message_handler(commands=['start'])
 def start(message):
-    bot.send_message(message.chat.id, "🤖 VIP BOT ACTIVE (UTC-5) 🔥")
+    bot.send_message(message.chat.id, "🤖 BOT ACTIVE 🔥")
 
-# 🚀 MAIN
+# 🚀 RUN (SAN THREAD = SOLISYON FINAL)
 if __name__ == "__main__":
-    print("Bot VIP ap mache san doublon...")
+    import threading
 
-    t = threading.Thread(target=start_bot)
-    t.daemon = True
-    t.start()
+    # polling nan background
+    threading.Thread(target=bot.infinity_polling, daemon=True).start()
 
-    bot.infinity_polling()
+    # main loop (yon sèl fwa)
+    run_bot()
