@@ -23,24 +23,22 @@ pairs = [
 ]
 
 martingale = 0
+running = False  # 🔥 anti-duplicate
 
-# ⏰ ENTRY TIME UTC-5
+# ⏰ UTC-5 ENTRY TIME
 def get_entry_time():
     tz = pytz.timezone("America/New_York")
     now = datetime.now(tz)
-
     entry = now + timedelta(minutes=2)
     entry = entry.replace(second=0, microsecond=0)
-
     return entry.strftime("%H:%M:%S")
 
-# 📊 RSI SMART
+# 📊 SMART RSI
 def calculate_fake_rsi():
     return random.randint(10, 90)
 
-def get_signal_from_rsi():
+def get_signal():
     rsi = calculate_fake_rsi()
-
     if rsi < 30:
         return "BUY 📈", rsi
     elif rsi > 70:
@@ -48,15 +46,14 @@ def get_signal_from_rsi():
     else:
         return None, rsi
 
-# 🚀 SIGNAL SYSTEM (1 BY 1)
+# 🚀 SIGNAL SYSTEM (ANTI-SPAM)
 def send_signal():
     global martingale
 
     while True:
         pair = random.choice(pairs)
-        direction, rsi = get_signal_from_rsi()
+        direction, rsi = get_signal()
 
-        # ❌ pa voye si pa bon
         if direction is None:
             time.sleep(30)
             continue
@@ -80,7 +77,7 @@ def send_signal():
 
         bot.send_message(CHAT_ID, msg)
 
-        # ⏳ tann 2 min entry + 1 min trade
+        # ⏳ tann 3 min (entry + trade)
         time.sleep(180)
 
         result = random.choices(
@@ -88,7 +85,6 @@ def send_signal():
             weights=[75, 25]
         )[0]
 
-        # martingale logic
         if result == "LOSS ❌":
             martingale += 1
         else:
@@ -96,17 +92,28 @@ def send_signal():
 
         bot.send_message(CHAT_ID, f"📊 Result: {result}")
 
-        # 🔥 pause pou evite spam
+        # 🔥 pause pou evite doublon
         time.sleep(30)
+
+# 🔥 ANTI-DOUBLE THREAD
+def start_bot():
+    global running
+    if running:
+        return
+    running = True
+    send_signal()
 
 # ▶️ START COMMAND
 @bot.message_handler(commands=['start'])
 def start(message):
     bot.send_message(message.chat.id, "🤖 VIP BOT ACTIVE (UTC-5) 🔥")
 
-# 🔁 RUN THREAD
-threading.Thread(target=send_signal).start()
+# 🚀 MAIN
+if __name__ == "__main__":
+    print("Bot VIP ap mache san doublon...")
 
-print("Bot VIP ap mache UTC-5...")
+    t = threading.Thread(target=start_bot)
+    t.daemon = True
+    t.start()
 
-bot.infinity_polling()
+    bot.infinity_polling()
