@@ -7,10 +7,10 @@ import pytz
 
 # 🔑 TOKEN & CHAT ID
 TOKEN = "8633167067:AAFcXmPWtpcg2DT5IJ5JltaVSyL1AhVDAX8"
-CHAT_ID = @bot.message_handler(commands=['start'])
+CHAT_ID = bot.message_handler(commands=['start'])
 def start(message):
     print(message.chat.id)
-    bot.send_message(message.chat.id, "ID ou an ap parèt nan logs ✅")
+    bot.send_message(message.chat.id, "ID ou an parèt nan logs ✅")
 
 bot = telebot.TeleBot(TOKEN)
 
