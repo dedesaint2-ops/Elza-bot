@@ -20,7 +20,6 @@ pairs = [
 
 martingale = 0
 
-# ⏰ UTC-5
 def get_entry_time():
     tz = pytz.timezone("America/New_York")
     now = datetime.now(tz)
@@ -28,10 +27,8 @@ def get_entry_time():
     entry = entry.replace(second=0, microsecond=0)
     return entry.strftime("%H:%M:%S")
 
-# 📊 RSI SMART
 def get_signal():
     rsi = random.randint(10, 90)
-
     if rsi < 30:
         return "BUY 📈", rsi
     elif rsi > 70:
@@ -39,14 +36,13 @@ def get_signal():
     else:
         return None, rsi
 
-# 🚀 MAIN LOOP (SAN THREAD)
 def run_bot():
     global martingale
 
-    print("Bot ap mache san doublon...")
+    print("Bot ap mache (NO SPAM)...")
 
-    # 🔥 tann avan premye signal (enpòtan)
-    time.sleep(10)
+    # delay pou evite spam startup
+    time.sleep(15)
 
     while True:
         pair = random.choice(pairs)
@@ -73,7 +69,7 @@ def run_bot():
 
         bot.send_message(CHAT_ID, msg)
 
-        # ⏳ tann trade fini (3 min)
+        # tann trade fini
         time.sleep(180)
 
         result = random.choices(
@@ -88,20 +84,19 @@ def run_bot():
 
         bot.send_message(CHAT_ID, f"📊 Result: {result}")
 
-        # 🔥 TI POZ OBLIGATWA
+        # pause anvan pwochen signal
         time.sleep(60)
 
-# ▶️ START COMMAND
 @bot.message_handler(commands=['start'])
 def start(message):
     bot.send_message(message.chat.id, "🤖 BOT ACTIVE 🔥")
 
-# 🚀 RUN (SAN THREAD = SOLISYON FINAL)
+# 🔥 KLE SOLISYON AN (NO THREAD MULTI)
 if __name__ == "__main__":
     import threading
 
-    # polling nan background
+    # Telegram polling
     threading.Thread(target=bot.infinity_polling, daemon=True).start()
 
-    # main loop (yon sèl fwa)
+    # sèlman 1 loop
     run_bot()
