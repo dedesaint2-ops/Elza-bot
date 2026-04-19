@@ -1,21 +1,9 @@
 import telebot
 import random
 import time
-import os
 from datetime import datetime, timedelta
 import pytz
 
-# 🔒 HARD LOCK (ANPECH DOUBLON)
-LOCK_FILE = "bot.lock"
-
-if os.path.exists(LOCK_FILE):
-    print("Bot deja ap kouri, stop...")
-    exit()
-
-with open(LOCK_FILE, "w") as f:
-    f.write("running")
-
-# 🔑 CONFIG
 TOKEN = "8633167067:AAFcXmPWtpcg2DT5IJ5JltaVSyL1AhVDAX8"
 CHAT_ID = "7000204425"
 
@@ -30,7 +18,7 @@ pairs = [
     "EUR/JPY OTC 💎"
 ]
 
-martingale = 2
+martingale = 0
 
 def get_entry_time():
     tz = pytz.timezone("America/New_York")
@@ -50,9 +38,9 @@ def get_signal():
 def run_bot():
     global martingale
 
-    print("Bot ap mache (LOCK ACTIVE)...")
+    print("Bot clean ap mache...")
 
-    time.sleep(10)
+    time.sleep(20)  # anti-start spam
 
     while True:
         pair = random.choice(pairs)
@@ -101,6 +89,5 @@ def start(message):
 
 if __name__ == "__main__":
     import threading
-
     threading.Thread(target=bot.infinity_polling, daemon=True).start()
     run_bot()
