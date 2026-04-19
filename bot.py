@@ -19,6 +19,7 @@ pairs = [
 ]
 
 martingale = 0
+last_signal_time = None  # 🔒 LOCK
 
 def get_entry_time():
     tz = pytz.timezone("America/New_York")
@@ -36,18 +37,25 @@ def get_signal():
     return None, rsi
 
 def run_bot():
-    global martingale
+    global martingale, last_signal_time
 
-    print("Bot clean ap mache...")
+    print("Bot anti-spam ap mache...")
 
-    time.sleep(20)  # anti-start spam
+    time.sleep(20)
 
     while True:
+        now = time.time()
+
+        # 🔒 BLOKE SI LI TWÒ BONÈ
+        if last_signal_time and (now - last_signal_time < 180):
+            time.sleep(5)
+            continue
+
         pair = random.choice(pairs)
         direction, rsi = get_signal()
 
         if direction is None:
-            time.sleep(20)
+            time.sleep(10)
             continue
 
         entry = get_entry_time()
@@ -67,6 +75,9 @@ def run_bot():
 
         bot.send_message(CHAT_ID, msg)
 
+        # 🔒 SAVE TIME
+        last_signal_time = time.time()
+
         time.sleep(180)
 
         result = random.choices(
@@ -81,7 +92,7 @@ def run_bot():
 
         bot.send_message(CHAT_ID, f"📊 Result: {result}")
 
-        time.sleep(60)
+        time.sleep(30)
 
 @bot.message_handler(commands=['start'])
 def start(message):
