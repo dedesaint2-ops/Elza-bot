@@ -3,7 +3,6 @@ import random
 import time
 import threading
 from datetime import datetime, timedelta
-import pytz
 
 TOKEN = "8633167067:AAFcXmPWtpcg2DT5IJ5JltaVSyL1AhVDAX8"
 CHAT_ID = "7000204425"
@@ -11,62 +10,66 @@ CHAT_ID = "7000204425"
 bot = telebot.TeleBot(TOKEN)
 
 pairs = [
-    "USD/PKR OTC 💎", "EUR/USD OTC 💎", "GBP/USD OTC 💎",
-    "USD/BDT OTC 💎",
-    "AUD/USD OTC 💎", "AUD/CAD OTC 💎",
-    "USD/CHF OTC 💎", "EUR/CHF OTC 💎",
-    "USD/JPY OTC 💎", "EUR/JPY OTC 💎"
+    "USD/PKR OTC 💎",
+    "AUD/USD OTC 💎",
+    "AUD/CAD OTC 💎",
+    "USD/CHF OTC 💎",
+    "EUR/CHF OTC 💎",
+    "USD/JPY OTC 💎",
+    "EUR/JPY OTC 💎"
 ]
 
-martingale_level = 0
+martingale = 0
 
 def get_entry_time():
-    tz = pytz.timezone("America/New_York")
-    now = datetime.now(tz)
-    entry = (now + timedelta(minutes=2)).replace(second=0, microsecond=0)
-    return entry.strftime("%H:%M:%S")
-
-@bot.message_handler(commands=['start'])
-def start(message):
-    bot.send_message(message.chat.id, "🤖 Bot PRO OTC aktif 🔥")
+    now = datetime.now()
+    entry = now + timedelta(minutes=2)
+    return entry.strftime("%H:%M")
 
 def send_signal():
-    global martingale_level
+    global martingale
 
     while True:
         pair = random.choice(pairs)
         direction = random.choice(["BUY 📈", "SELL 📉"])
-        entry_time = get_entry_time()
+        entry = get_entry_time()
 
-        signal = f"""
-📊 SIGNAL OTC
+        msg = f"""
+💎 VIP OTC SIGNAL 💎
 
-Pair: {pair}
-Direction: {direction}
+📊 Pair: {pair}
+📈 Direction: {direction}
 
-⏰ Entry Time: {entry_time}
-Timeframe: M1 ⏱️
-Exp: 1 min
+⏰ Entry: {entry}
+⏱️ Timeframe: M1
+⌛ Expiration: 1 min
 
-💰 Martingale Level: {martingale_level}
+💰 Martingale: {'OFF' if martingale == 0 else f'MG{martingale}'}
 """
-        bot.send_message(CHAT_ID, signal)
 
-        time.sleep(125)
+        bot.send_message(CHAT_ID, msg)
+
+        # tann jis entry pase + trade fini (3 min total)
+        time.sleep(180)
 
         result = random.choice(["WIN ✅", "LOSS ❌"])
 
         if result == "LOSS ❌":
-            martingale_level += 1
+            martingale += 1
         else:
-            martingale_level = 0
+            martingale = 0
 
-        bot.send_message(CHAT_ID, f"📈 Result: {result}")
+        bot.send_message(CHAT_ID, f"📊 Result: {result}")
 
-        time.sleep(55)
+        # ti poz pou pa spam
+        time.sleep(5)
+
+@bot.message_handler(commands=['start'])
+def start(message):
+    bot.send_message(message.chat.id, "🤖 VIP BOT ACTIVE 🔥")
 
 threading.Thread(target=send_signal).start()
 
-print("Bot ap mache...")
+print("Bot VIP ap mache...")
 
 bot.infinity_polling()
